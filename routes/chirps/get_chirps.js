@@ -9,11 +9,13 @@ module.exports = {
         if (err) {
           reply(err.message);
         } else {
-          reply(result.rows.map(function(chirp) {
+          var chirps = result.rows.map(function(chirp) {
             return {
+              user: chirp.user,
               message: chirp.message
             };
-          }));
+          });
+          reply(chirps);
         }
       });
     }

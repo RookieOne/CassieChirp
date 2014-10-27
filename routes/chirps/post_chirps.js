@@ -7,14 +7,22 @@ module.exports = {
   config: {
     handler: function(request, reply) {
       var id = cassandra.types.uuid();
+      var user = request.payload.user;
+      var message = request.payload.message;
+      var timestamp = new Date();
 
-      client.execute('INSERT INTO chirp.chirps (id, message) VALUES(?, ?);',
-        [id, request.payload.message],
-        function(err, res) {
+      var queries = [{
+        query: 'INSERT INTO chirp.chirps (id, user, message) VALUES(?, ?, ?);',
+        params: [id, user, message]
+      }, {
+        query: 'UPDATE chirp.user_chirps SET chirps[?] = ? WHERE id = ?;',
+        params: [timestamp, message, user]
+      }];
+
+      client.batch(queries, {}, function(err, res) {
           if (err) {
             reply(err.message);
           } else {
-            console.log(res);
             reply('You just chirped!');
           }
         });
